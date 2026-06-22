@@ -1,12 +1,14 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, AlertCircle, Clock } from 'lucide-react'
+import { ArrowLeft, AlertCircle, Clock, CheckCircle2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CategoryPill } from '@/components/bounty/CategoryPill'
 import { StatusBadge } from '@/components/bounty/StatusBadge'
 import { SkeletonCard } from '@/components/common/SkeletonCard'
 import { useBounty } from '@/hooks/useBounties'
 import { useWallet } from '@/context/WalletContext'
-import { claimBounty, approveBounty } from '@/lib/supabase'
+import { claimBounty, approveBounty, markBountyPaid } from '@/lib/supabase'
+import { sendPayment } from '@/lib/nimiq'
 import { formatReward, timeAgo, shortenAddress } from '@/lib/utils'
 
 export function BountyDetail() {
@@ -14,18 +16,46 @@ export function BountyDetail() {
   const navigate = useNavigate()
   const { wallet, connect, connecting } = useWallet()
   const { bounty, loading, setBounty } = useBounty(id!)
+  const [claiming, setClaiming] = useState(false)
+  const [approving, setApproving] = useState(false)
+  const [payError, setPayError] = useState<string | null>(null)
 
   async function handleClaim() {
     if (!wallet || !bounty) return
-    const updated = await claimBounty(bounty.id, wallet.address)
-    setBounty(updated)
+    setClaiming(true)
+    try {
+      const updated = await claimBounty(bounty.id, wallet.address)
+      setBounty(updated)
+    } finally {
+      setClaiming(false)
+    }
   }
 
   async function handleApprove() {
-    if (!bounty) return
-    const updated = await approveBounty(bounty.id)
-    setBounty(updated)
-    navigate(`/bounty/${bounty.id}/submit`)
+    if (!bounty || !wallet) return
+    if (!bounty.workerWallet) return
+    setApproving(true)
+    setPayError(null)
+    try {
+      // 1. Send NIM from creator → worker
+      const { txHash } = await sendPayment({
+        recipient: bounty.workerWallet,
+        amount: bounty.rewardAmount,
+        currency: bounty.rewardCurrency,
+        bountyId: bounty.id,
+      })
+
+      // 2. Mark approved in DB
+      await approveBounty(bounty.id)
+
+      // 3. Mark paid + create payment record
+      const paid = await markBountyPaid(bounty.id, txHash)
+      setBounty(paid)
+    } catch (err) {
+      setPayError(err instanceof Error ? err.message : 'Payment failed. Try again.')
+    } finally {
+      setApproving(false)
+    }
   }
 
   if (loading) {
@@ -52,6 +82,7 @@ export function BountyDetail() {
   const canClaim = bounty.status === 'open' && wallet && !isCreator
   const canSubmit = bounty.status === 'claimed' && isWorker
   const canApprove = bounty.status === 'submitted' && isCreator
+  const isPaid = bounty.status === 'paid'
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -75,12 +106,23 @@ export function BountyDetail() {
           <h1 className="font-display font-bold text-text-primary text-[1.5rem] leading-snug mb-2">
             {bounty.title}
           </h1>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-display font-bold text-nimiq-yellow">
-              {formatReward(bounty.rewardAmount, bounty.rewardCurrency)}
-            </span>
-          </div>
+          <span className="text-2xl font-display font-bold text-nimiq-yellow">
+            {formatReward(bounty.rewardAmount, bounty.rewardCurrency)}
+          </span>
         </div>
+
+        {/* Paid success banner */}
+        {isPaid && (
+          <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-center gap-3">
+            <CheckCircle2 size={20} className="text-green-600 shrink-0" />
+            <div>
+              <p className="font-display font-semibold text-green-800 text-sm">Payment sent!</p>
+              <p className="text-green-700 text-xs mt-0.5">
+                {formatReward(bounty.rewardAmount, bounty.rewardCurrency)} was sent to the worker.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Description */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-4">
@@ -115,6 +157,14 @@ export function BountyDetail() {
             )}
           </div>
         )}
+
+        {/* Payment error */}
+        {payError && (
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3">
+            <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+            <p className="text-red-700 text-sm">{payError}</p>
+          </div>
+        )}
       </div>
 
       {/* CTA */}
@@ -124,16 +174,18 @@ export function BountyDetail() {
             {connecting ? 'Connecting…' : 'Connect wallet to claim'}
           </Button>
         ) : canClaim ? (
-          <Button size="lg" className="w-full" onClick={handleClaim}>
-            Claim this bounty
+          <Button size="lg" className="w-full" onClick={handleClaim} disabled={claiming}>
+            {claiming ? <><Loader2 size={16} className="animate-spin" /> Claiming…</> : 'Claim this bounty'}
           </Button>
         ) : canSubmit ? (
           <Button size="lg" className="w-full" onClick={() => navigate(`/bounty/${bounty.id}/submit`)}>
             Submit your work
           </Button>
         ) : canApprove ? (
-          <Button size="lg" className="w-full" onClick={handleApprove}>
-            Approve & release payment
+          <Button size="lg" className="w-full" onClick={handleApprove} disabled={approving}>
+            {approving
+              ? <><Loader2 size={16} className="animate-spin" /> Sending payment…</>
+              : `Approve & send ${formatReward(bounty.rewardAmount, bounty.rewardCurrency)}`}
           </Button>
         ) : null}
       </div>

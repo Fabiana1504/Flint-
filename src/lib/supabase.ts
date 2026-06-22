@@ -123,6 +123,30 @@ export async function approveBounty(bountyId: string) {
   return data as Bounty
 }
 
+export async function markBountyPaid(bountyId: string, txHash: string) {
+  const { data, error } = await supabase
+    .from('bounties')
+    .update({ status: 'paid', paidAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
+    .eq('id', bountyId)
+    .select()
+    .single()
+  if (error) throw error
+
+  const bounty = data as Bounty
+  await supabase.from('payments').insert({
+    bountyId,
+    fromWallet: bounty.creatorWallet,
+    toWallet: bounty.workerWallet,
+    amount: bounty.rewardAmount,
+    currency: bounty.rewardCurrency,
+    txHash,
+    status: 'confirmed',
+    createdAt: new Date().toISOString(),
+  })
+
+  return bounty
+}
+
 export async function fetchMyBounties(walletAddress: string) {
   const [created, claimed] = await Promise.all([
     supabase.from('bounties').select('*').eq('creatorWallet', walletAddress).order('createdAt', { ascending: false }),
