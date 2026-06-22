@@ -7,6 +7,7 @@ interface WalletContextValue {
   wallet: NimiqWallet | null
   user: User | null
   connecting: boolean
+  insideNimiqPay: boolean
   connect: () => Promise<void>
   disconnect: () => void
 }
@@ -17,6 +18,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<NimiqWallet | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [connecting, setConnecting] = useState(false)
+  const insideNimiqPay = isInsideNimiqPay()
 
   const connect = useCallback(async () => {
     setConnecting(true)
@@ -25,6 +27,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setWallet(nimiqWallet)
       const dbUser = await getOrCreateUser(nimiqWallet.address)
       setUser(dbUser)
+    } catch (err) {
+      console.error('Wallet connection failed:', err)
     } finally {
       setConnecting(false)
     }
@@ -35,15 +39,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
-  // Auto-connect when running inside Nimiq Pay
+  // Inside Nimiq Pay: auto-connect on load, wallet is already available
   useEffect(() => {
-    if (isInsideNimiqPay()) {
+    if (insideNimiqPay) {
       connect()
     }
-  }, [connect])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <WalletContext.Provider value={{ wallet, user, connecting, connect, disconnect }}>
+    <WalletContext.Provider value={{ wallet, user, connecting, insideNimiqPay, connect, disconnect }}>
       {children}
     </WalletContext.Provider>
   )
