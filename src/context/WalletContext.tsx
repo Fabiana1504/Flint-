@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import { chooseAddress, type NimiqWallet } from '@/lib/nimiq'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
+import { connectWallet, isInsideNimiqPay, type NimiqWallet } from '@/lib/nimiq'
 import { getOrCreateUser } from '@/lib/supabase'
 import type { User } from '@/types'
 
@@ -21,7 +21,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const connect = useCallback(async () => {
     setConnecting(true)
     try {
-      const nimiqWallet = await chooseAddress()
+      const nimiqWallet = await connectWallet()
       setWallet(nimiqWallet)
       const dbUser = await getOrCreateUser(nimiqWallet.address)
       setUser(dbUser)
@@ -34,6 +34,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setWallet(null)
     setUser(null)
   }, [])
+
+  // Auto-connect when running inside Nimiq Pay
+  useEffect(() => {
+    if (isInsideNimiqPay()) {
+      connect()
+    }
+  }, [connect])
 
   return (
     <WalletContext.Provider value={{ wallet, user, connecting, connect, disconnect }}>
