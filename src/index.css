@@ -10,7 +10,7 @@
 
   html {
     font-family: 'Inter', sans-serif;
-    background-color: #FAFAF8;
+    background-color: #F5F4F0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -19,19 +19,16 @@
   body {
     @apply bg-background text-text-primary;
     overscroll-behavior-y: none;
-    /* Fix Android font rendering */
     font-size: 16px;
     line-height: 1.5;
   }
 
   h1, h2, h3, h4 {
     font-family: 'Sora', sans-serif;
-    letter-spacing: -0.01em;
   }
 
   input, textarea, select, button {
     font-family: inherit;
-    /* Prevent zoom on focus in iOS/Android */
     font-size: 16px;
   }
 }
@@ -40,41 +37,57 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Safe area padding bottom — works on Android + iOS */
   .pb-safe {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
-  .mb-safe {
-    margin-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
 
-  /* Fade-up entrance */
+  /* Entrance animations */
   .animate-fade-up {
-    animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease both;
   }
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
 
-  /* Stagger */
-  .stagger > *:nth-child(1) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 0ms both; }
-  .stagger > *:nth-child(2) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 50ms both; }
-  .stagger > *:nth-child(3) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 100ms both; }
-  .stagger > *:nth-child(4) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 150ms both; }
-  .stagger > *:nth-child(5) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 200ms both; }
+  /* Stagger children */
+  .stagger > *:nth-child(1)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0ms   both; }
+  .stagger > *:nth-child(2)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 60ms  both; }
+  .stagger > *:nth-child(3)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 120ms both; }
+  .stagger > *:nth-child(4)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 180ms both; }
+  .stagger > *:nth-child(5)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 240ms both; }
+  .stagger > *:nth-child(6)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 300ms both; }
+  .stagger > *:nth-child(7)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 360ms both; }
+  .stagger > *:nth-child(8)  { animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 420ms both; }
 
   /* Shimmer skeleton */
   .shimmer {
-    background: linear-gradient(90deg, #f0f0ee 25%, #e8e8e5 50%, #f0f0ee 75%);
+    background: linear-gradient(90deg, #eeede9 25%, #e5e4e0 50%, #eeede9 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+    animation: shimmer 1.6s infinite;
   }
   @keyframes shimmer {
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
 
-  /* Press feedback for Android */
-  .press:active { transform: scale(0.97); transition: transform 0.1s; }
+  /* Press / tap feedback */
+  .press { -webkit-tap-highlight-color: transparent; }
+  .press:active { transform: scale(0.965); transition: transform 80ms ease; }
+
+  /* Pulsing dot for "live" indicator */
+  .pulse-dot {
+    animation: pulseDot 2s infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+  }
 }
