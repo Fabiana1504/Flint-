@@ -138,9 +138,12 @@ export async function markBountyPaid(bountyId: string, txHash: string) {
     .from('bounties')
     .update({ status: 'paid', paidAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
     .eq('id', bountyId)
+    // Allow update from both 'approved' and 'submitted' (handles recovery after partial failure)
+    .in('status', ['submitted', 'approved'])
     .select()
     .single()
-  if (error) throw error
+  if (error) throw new Error(`Could not mark bounty as paid: ${error.message}`)
+  if (!data) throw new Error('Bounty not found or already paid')
 
   const bounty = data as Bounty
   await supabase.from('payments').insert({

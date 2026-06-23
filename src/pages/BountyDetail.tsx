@@ -35,11 +35,34 @@ export function BountyDetail() {
     if (!bounty || !wallet || !bounty.workerWallet) return
     setApproving(true); setPayError(null)
     try {
-      const { txHash } = await sendPayment({ recipient: bounty.workerWallet, amount: bounty.rewardAmount, currency: bounty.rewardCurrency, bountyId: bounty.id })
-      await approveBounty(bounty.id)
+      let txHash: string
+
+      if (bounty.status === 'submitted') {
+        // Normal flow: send NIM → mark approved → mark paid
+        const result = await sendPayment({
+          recipient: bounty.workerWallet,
+          amount: bounty.rewardAmount,
+          currency: bounty.rewardCurrency,
+          bountyId: bounty.id,
+        })
+        txHash = result.txHash
+        await approveBounty(bounty.id)
+      } else {
+        // Recovery: bounty is 'approved' — payment was already sent but
+        // the DB update to 'paid' failed last time. Don't re-send NIM.
+        txHash = `recovery-${bounty.id.slice(0, 8)}`
+      }
+
       setBounty(await markBountyPaid(bounty.id, txHash))
     } catch (err) {
-      setPayError(err instanceof Error ? err.message : 'Payment failed. Try again.')
+      // Extract message from Error objects AND Supabase PostgrestError objects
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : 'Could not complete payment. Please try again.'
+      setPayError(msg)
     } finally { setApproving(false) }
   }
 
@@ -68,7 +91,8 @@ export function BountyDetail() {
   const isWorker   = wallet?.address === bounty.workerWallet
   const canClaim   = bounty.status === 'open'      && wallet && !isCreator
   const canSubmit  = bounty.status === 'claimed'   && isWorker
-  const canApprove = bounty.status === 'submitted' && isCreator
+  // 'approved' means payment was sent but DB update to 'paid' failed — show retry button
+  const canApprove = (bounty.status === 'submitted' || bounty.status === 'approved') && isCreator
   const isPaid     = bounty.status === 'paid'
   const accent     = CAT_ACCENT[bounty.category]
 
@@ -174,12 +198,28 @@ export function BountyDetail() {
           ) : canSubmit ? (
             <CTA label="Submit your work" onClick={() => navigate(`/bounty/${bounty.id}/submit`)} />
           ) : canApprove ? (
-            <CTA
-              label={approving ? 'Sending payment…' : `Approve & send ${formatReward(bounty.rewardAmount, bounty.rewardCurrency)}`}
-              onClick={handleApprove}
-              disabled={approving}
-              loading={approving}
-            />
+            <>
+              {bounty.status === 'approved' && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-3 flex items-start gap-2.5">
+                  <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-amber-800 text-xs font-medium leading-relaxed">
+                    Payment was sent but the record wasn't saved. Tap below to complete the approval without sending NIM again.
+                  </p>
+                </div>
+              )}
+              <CTA
+                label={
+                  approving
+                    ? 'Completing…'
+                    : bounty.status === 'approved'
+                      ? 'Complete approval (NIM already sent)'
+                      : `Approve & send ${formatReward(bounty.rewardAmount, bounty.rewardCurrency)}`
+                }
+                onClick={handleApprove}
+                disabled={approving}
+                loading={approving}
+              />
+            </>
           ) : null}
         </div>
       </div>
