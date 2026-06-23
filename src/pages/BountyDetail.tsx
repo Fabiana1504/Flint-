@@ -8,7 +8,7 @@ import { useBounty } from '@/hooks/useBounties'
 import { useWallet } from '@/context/WalletContext'
 import { claimBounty, approveBounty, markBountyPaid } from '@/lib/supabase'
 import { sendPayment } from '@/lib/nimiq'
-import { formatReward, timeAgo, shortenAddress, sanitizeUrl } from '@/lib/utils'
+import { formatReward, timeAgo, shortenAddress } from '@/lib/utils'
 import type { BountyCategory } from '@/types'
 
 const CAT_ACCENT: Record<BountyCategory, string> = {
@@ -172,7 +172,7 @@ export function BountyDetail() {
           <Card title="Submitted work">
             <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-wrap mb-3">{bounty.submittedEvidence}</p>
             {bounty.submittedLink && (
-              <a href={sanitizeUrl(bounty.submittedLink)} target="_blank" rel="noreferrer noopener"
+              <a href={bounty.submittedLink} target="_blank" rel="noreferrer noopener"
                 className="inline-flex items-center gap-1.5 font-bold text-sm"
                 style={{ color: accent }}>
                 View link <ExternalLink size={13} />

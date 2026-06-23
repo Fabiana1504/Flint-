@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useWallet } from '@/context/WalletContext'
 import { createBounty } from '@/lib/supabase'
-import { CATEGORIES, cn, checkBountyRateLimit } from '@/lib/utils'
+import { CATEGORIES, cn } from '@/lib/utils'
 import type { BountyCategory, RewardCurrency } from '@/types'
 
 const schema = z.object({
@@ -33,15 +33,11 @@ export function CreateBounty() {
   const [category, setCategory]   = useState<BountyCategory>('Dev')
   const [currency, setCurrency]   = useState<RewardCurrency>('NIM')
   const [submitting, setSubmitting] = useState(false)
-  const [rateError, setRateError]   = useState<string | null>(null)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   async function onSubmit(data: FormData) {
     if (!wallet) { await connect(); return }
-    const rl = checkBountyRateLimit(wallet.address)
-    if (!rl.allowed) { setRateError(`Too many bounties. Try again in ${rl.retryInMinutes} min.`); return }
-    setRateError(null)
     setSubmitting(true)
     try {
       const bounty = await createBounty({ title: data.title, description: data.description, category, rewardAmount: data.rewardAmount, rewardCurrency: currency, creatorWallet: wallet.address, evidenceRequired: data.evidenceRequired, status: 'open' })
@@ -130,13 +126,6 @@ export function CreateBounty() {
         <Field label="Proof of work required" error={errors.evidenceRequired?.message}>
           <Textarea {...register('evidenceRequired')} placeholder="e.g. Screenshot of each screen + written summary of any bugs found" rows={3} />
         </Field>
-
-        {/* Rate limit error */}
-        {rateError && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-700 font-semibold">
-            {rateError}
-          </div>
-        )}
 
         {/* Submit */}
         {!wallet ? (
