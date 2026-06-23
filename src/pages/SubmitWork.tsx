@@ -13,8 +13,11 @@ import { submitEvidence } from '@/lib/supabase'
 import { formatReward } from '@/lib/utils'
 
 const schema = z.object({
-  evidence: z.string().min(10, 'Describe your work in at least 10 characters'),
-  link: z.string().url('Enter a valid URL').optional().or(z.literal('')),
+  evidence: z.string().min(10, 'Describe your work in at least 10 characters').max(2000),
+  link: z.string()
+    .refine(v => v === '' || /^https:\/\/.+/.test(v), 'Link must start with https://')
+    .optional()
+    .or(z.literal('')),
 })
 
 type FormData = z.infer<typeof schema>

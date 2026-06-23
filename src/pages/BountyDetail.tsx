@@ -9,7 +9,7 @@ import { useBounty } from '@/hooks/useBounties'
 import { useWallet } from '@/context/WalletContext'
 import { claimBounty, approveBounty, markBountyPaid } from '@/lib/supabase'
 import { sendPayment } from '@/lib/nimiq'
-import { formatReward, timeAgo, shortenAddress } from '@/lib/utils'
+import { formatReward, timeAgo, shortenAddress, sanitizeUrl } from '@/lib/utils'
 
 export function BountyDetail() {
   const { id } = useParams<{ id: string }>()
@@ -154,9 +154,9 @@ export function BountyDetail() {
             <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-wrap mb-3">{bounty.submittedEvidence}</p>
             {bounty.submittedLink && (
               <a
-                href={bounty.submittedLink}
+                href={sanitizeUrl(bounty.submittedLink)}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="inline-flex items-center gap-1.5 text-nimiq-yellow text-sm font-semibold"
               >
                 View link <ExternalLink size={13} />

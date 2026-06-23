@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { sanitizeText } from '@/lib/utils'
 import type { Bounty, Payment, User } from '@/types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? 'https://placeholder.supabase.co'
@@ -74,7 +75,14 @@ export async function createBounty(bounty: Omit<Bounty, 'id' | 'createdAt' | 'up
   const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('bounties')
-    .insert({ ...bounty, createdAt: now, updatedAt: now })
+    .insert({
+      ...bounty,
+      title: sanitizeText(bounty.title),
+      description: sanitizeText(bounty.description),
+      evidenceRequired: sanitizeText(bounty.evidenceRequired),
+      createdAt: now,
+      updatedAt: now,
+    })
     .select()
     .single()
   if (error) throw error
@@ -94,12 +102,14 @@ export async function claimBounty(bountyId: string, workerWallet: string) {
 }
 
 export async function submitEvidence(bountyId: string, evidence: string, link?: string) {
+  // Sanitize link: only allow http/https
+  const safeLink = link ? (/^https?:\/\//.test(link) ? link : null) : null
   const { data, error } = await supabase
     .from('bounties')
     .update({
       status: 'submitted',
-      submittedEvidence: evidence,
-      submittedLink: link ?? null,
+      submittedEvidence: sanitizeText(evidence),
+      submittedLink: safeLink,
       submittedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     })
