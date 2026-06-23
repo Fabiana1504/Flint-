@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Flame } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { CategoryPill } from '@/components/bounty/CategoryPill'
 import { useWallet } from '@/context/WalletContext'
 import { createBounty } from '@/lib/supabase'
 import { CATEGORIES, cn } from '@/lib/utils'
@@ -21,6 +20,10 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
+
+const CATEGORY_EMOJIS: Record<BountyCategory, string> = {
+  Testing: '🧪', Design: '🎨', Writing: '✍️', Survey: '📋', Dev: '💻',
+}
 
 export function CreateBounty() {
   const navigate = useNavigate()
@@ -54,45 +57,46 @@ export function CreateBounty() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="sticky top-0 bg-white border-b border-gray-100 z-10 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Header */}
+      <div className="sticky top-0 bg-white/95 border-b border-gray-100 z-10 px-4 h-14 flex items-center gap-2">
+        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors press">
           <ArrowLeft size={20} className="text-text-primary" />
         </button>
-        <span className="font-display font-semibold text-text-primary">Post a bounty</span>
+        <span className="font-display font-semibold text-text-primary text-[0.95rem]">Post a bounty</span>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="px-5 pt-6 pb-32 flex flex-col gap-5">
-        {/* Title */}
-        <Field label="Title" error={errors.title?.message}>
+      <form onSubmit={handleSubmit(onSubmit)} className="px-4 pt-5 pb-8 flex flex-col gap-5">
+        <Field label="Title" hint="Be specific and clear" error={errors.title?.message}>
           <Input {...register('title')} placeholder="e.g. Test our checkout flow on mobile" />
         </Field>
 
-        {/* Description */}
-        <Field label="Description" error={errors.description?.message}>
-          <Textarea {...register('description')} placeholder="What exactly needs to be done? Be specific." rows={4} />
+        <Field label="Description" hint="What exactly needs to be done?" error={errors.description?.message}>
+          <Textarea {...register('description')} placeholder="Describe the task in detail. Include any links, assets or context the worker will need." rows={4} />
         </Field>
 
         {/* Category */}
-        <Field label="Category">
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-semibold text-text-primary">Category</label>
+          <div className="grid grid-cols-3 gap-2">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setCategory(cat)}
                 className={cn(
-                  'rounded-full border transition-all px-3 py-1.5 text-sm font-label font-medium',
+                  'flex flex-col items-center gap-1 py-3 rounded-2xl border text-xs font-semibold transition-all duration-150 press',
                   category === cat
                     ? 'border-nimiq-yellow bg-nimiq-yellow-light text-nimiq-yellow'
-                    : 'border-border bg-white text-text-secondary'
+                    : 'border-gray-200 bg-white text-text-secondary'
                 )}
               >
-                <CategoryPill category={cat} className={category === cat ? '!bg-transparent !text-nimiq-yellow' : ''} />
+                <span className="text-xl">{CATEGORY_EMOJIS[cat]}</span>
+                {cat}
               </button>
             ))}
           </div>
-        </Field>
+        </div>
 
         {/* Reward */}
         <Field label="Reward" error={errors.rewardAmount?.message}>
@@ -100,20 +104,23 @@ export function CreateBounty() {
             <Input
               {...register('rewardAmount')}
               type="number"
+              inputMode="decimal"
               min="0"
               step="any"
-              placeholder="Amount"
-              className="flex-1"
+              placeholder="0"
+              className="flex-1 text-lg font-bold"
             />
-            <div className="flex rounded-2xl border border-border overflow-hidden">
+            <div className="flex rounded-2xl border border-gray-200 overflow-hidden bg-white">
               {(['NIM', 'USDT'] as RewardCurrency[]).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCurrency(c)}
                   className={cn(
-                    'px-4 text-sm font-label font-semibold transition-colors',
-                    currency === c ? 'bg-nimiq-yellow text-text-primary' : 'bg-white text-text-secondary'
+                    'w-16 text-sm font-bold transition-all duration-150 press',
+                    currency === c
+                      ? 'bg-nimiq-yellow text-text-primary'
+                      : 'bg-white text-text-secondary'
                   )}
                 >
                   {c}
@@ -123,37 +130,42 @@ export function CreateBounty() {
           </div>
         </Field>
 
-        {/* Evidence required */}
-        <Field label="Evidence required" error={errors.evidenceRequired?.message}>
+        <Field label="Proof required" hint="What should the worker send you?" error={errors.evidenceRequired?.message}>
           <Textarea
             {...register('evidenceRequired')}
-            placeholder="What should the worker submit as proof? e.g. Screenshot + short written summary"
+            placeholder="e.g. Screenshot of each step + written bug report"
             rows={3}
           />
         </Field>
-      </form>
 
-      <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-full max-w-app px-5 pb-4 bg-gradient-to-t from-background via-background to-transparent pt-6">
-        {!wallet ? (
-          <Button size="lg" className="w-full" onClick={connect} disabled={connecting}>
-            {connecting ? 'Connecting…' : 'Connect wallet to post'}
-          </Button>
-        ) : (
-          <Button size="lg" className="w-full" onClick={handleSubmit(onSubmit)} disabled={submitting}>
-            {submitting ? 'Posting…' : 'Post bounty'}
-          </Button>
-        )}
-      </div>
+        {/* Submit */}
+        <div className="pt-2">
+          {!wallet ? (
+            <Button size="lg" className="w-full" onClick={connect} disabled={connecting}>
+              {connecting ? 'Connecting…' : 'Connect wallet to post'}
+            </Button>
+          ) : (
+            <Button size="lg" className="w-full" type="submit" disabled={submitting}>
+              {submitting
+                ? 'Posting…'
+                : <span className="flex items-center gap-2"><Flame size={16} />Post bounty</span>}
+            </Button>
+          )}
+        </div>
+      </form>
     </div>
   )
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-label font-semibold text-text-primary">{label}</label>
+      <div className="flex items-baseline justify-between">
+        <label className="text-sm font-semibold text-text-primary">{label}</label>
+        {hint && <span className="text-xs text-text-secondary">{hint}</span>}
+      </div>
       {children}
-      {error && <p className="text-xs text-error font-label">{error}</p>}
+      {error && <p className="text-xs text-error font-medium">{error}</p>}
     </div>
   )
 }

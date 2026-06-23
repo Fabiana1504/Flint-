@@ -5,20 +5,34 @@
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
   }
 
   html {
     font-family: 'Inter', sans-serif;
     background-color: #FAFAF8;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
     @apply bg-background text-text-primary;
     overscroll-behavior-y: none;
+    /* Fix Android font rendering */
+    font-size: 16px;
+    line-height: 1.5;
   }
 
   h1, h2, h3, h4 {
     font-family: 'Sora', sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  input, textarea, select, button {
+    font-family: inherit;
+    /* Prevent zoom on focus in iOS/Android */
+    font-size: 16px;
   }
 }
 
@@ -26,34 +40,41 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  .pb-safe-bottom {
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  /* Safe area padding bottom — works on Android + iOS */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .mb-safe {
+    margin-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
   /* Fade-up entrance */
   .animate-fade-up {
-    animation: fadeUp 0.4s ease both;
+    animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Staggered children */
-  .stagger > *:nth-child(1) { animation-delay: 0ms; }
-  .stagger > *:nth-child(2) { animation-delay: 60ms; }
-  .stagger > *:nth-child(3) { animation-delay: 120ms; }
-  .stagger > *:nth-child(4) { animation-delay: 180ms; }
-  .stagger > *:nth-child(5) { animation-delay: 240ms; }
+  /* Stagger */
+  .stagger > *:nth-child(1) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 0ms both; }
+  .stagger > *:nth-child(2) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 50ms both; }
+  .stagger > *:nth-child(3) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 100ms both; }
+  .stagger > *:nth-child(4) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 150ms both; }
+  .stagger > *:nth-child(5) { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) 200ms both; }
 
-  /* Shimmer for skeletons */
+  /* Shimmer skeleton */
   .shimmer {
-    background: linear-gradient(90deg, #f0f0ee 25%, #e8e8e6 50%, #f0f0ee 75%);
+    background: linear-gradient(90deg, #f0f0ee 25%, #e8e8e5 50%, #f0f0ee 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.4s infinite;
+    animation: shimmer 1.5s infinite;
   }
   @keyframes shimmer {
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
+
+  /* Press feedback for Android */
+  .press:active { transform: scale(0.97); transition: transform 0.1s; }
 }
