@@ -38,7 +38,10 @@ export function BountyDetail() {
       let txHash: string
 
       if (bounty.status === 'submitted') {
-        // Normal flow: send NIM → mark approved → mark paid
+        // Send NIM first, then lock status to 'approved' in the DB.
+        // We update local state to 'approved' immediately so that if
+        // markBountyPaid fails below, the next tap skips sendPayment
+        // and doesn't charge the wallet again.
         const result = await sendPayment({
           recipient: bounty.workerWallet,
           amount: bounty.rewardAmount,
@@ -46,10 +49,11 @@ export function BountyDetail() {
           bountyId: bounty.id,
         })
         txHash = result.txHash
-        await approveBounty(bounty.id)
+        const approvedBounty = await approveBounty(bounty.id)
+        setBounty(approvedBounty) // guard: any retry from here won't re-send NIM
       } else {
-        // Recovery: bounty is 'approved' — payment was already sent but
-        // the DB update to 'paid' failed last time. Don't re-send NIM.
+        // Recovery: payment was already sent but markBountyPaid failed.
+        // Don't re-send NIM — just complete the DB record.
         txHash = `recovery-${bounty.id.slice(0, 8)}`
       }
 
