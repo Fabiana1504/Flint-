@@ -2,12 +2,10 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { Home, Search, User, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const NAV_LEFT  = [
-  { to: '/',       icon: Home,   label: 'Home'   },
-  { to: '/browse', icon: Search, label: 'Browse' },
-]
-const NAV_RIGHT = [
-  { to: '/dashboard', icon: User, label: 'Mine' },
+const NAV = [
+  { to: '/',          icon: Home,   label: 'Home'   },
+  { to: '/browse',    icon: Search, label: 'Browse' },
+  { to: '/dashboard', icon: User,   label: 'Mine'   },
 ]
 
 export function BottomNav() {
@@ -17,42 +15,33 @@ export function BottomNav() {
     <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-app z-50">
       <div className="relative">
 
-        {/* FAB — absolutely centered above the bar, no translate tricks */}
+        {/* FAB — absolute so it sits perfectly centered above the bar */}
         <button
           onClick={() => navigate('/create')}
-          className="absolute left-1/2 -translate-x-1/2 -top-6 w-[52px] h-[52px] rounded-2xl flex items-center justify-center press"
+          className="absolute left-1/2 -translate-x-1/2 -top-8 w-16 h-16 rounded-full flex items-center justify-center press"
           style={{
-            background: 'linear-gradient(145deg, #F7C04A 0%, #F5A623 55%, #E8951A 100%)',
-            boxShadow: '0 8px 24px rgba(245,166,35,0.6), 0 2px 8px rgba(0,0,0,0.15)',
+            background: 'linear-gradient(145deg, #F7C04A 0%, #F5A623 60%, #E8951A 100%)',
+            boxShadow: '0 6px 24px rgba(245,166,35,0.55), 0 2px 8px rgba(0,0,0,0.12)',
           }}
         >
-          <Plus size={22} strokeWidth={2.8} className="text-[#18181B]" />
+          <Plus size={28} strokeWidth={2.5} className="text-nimiq-dark" />
         </button>
 
-        {/* Bar */}
+        {/* Nav bar */}
         <div
-          className="border-t border-gray-100 flex items-stretch"
-          style={{
-            background: 'rgba(255,255,255,0.97)',
-            backdropFilter: 'blur(20px)',
-            paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
-          }}
+          className="border-t border-gray-100 flex items-center px-2"
+          style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)', paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
         >
-          {/* Left tabs */}
-          {NAV_LEFT.map(({ to, icon: Icon, label }) => (
+          {NAV.slice(0, 2).map(({ to, icon: Icon, label }) => (
             <TabItem key={to} to={to} icon={Icon} label={label} />
           ))}
 
-          {/* Center spacer — same flex weight as a tab so FAB lands at 50% */}
+          {/* Invisible spacer where the FAB floats */}
           <div className="flex-1" />
 
-          {/* Right tabs */}
-          {NAV_RIGHT.map(({ to, icon: Icon, label }) => (
+          {NAV.slice(2).map(({ to, icon: Icon, label }) => (
             <TabItem key={to} to={to} icon={Icon} label={label} />
           ))}
-
-          {/* Mirror spacer so right side is balanced with left's 2 tabs */}
-          <div className="flex-1" />
         </div>
       </div>
     </div>
@@ -63,20 +52,11 @@ function TabItem({ to, icon: Icon, label }: { to: string; icon: React.ElementTyp
   return (
     <NavLink to={to} end={to === '/'} className="flex-1">
       {({ isActive }) => (
-        <div className={cn(
-          'flex flex-col items-center justify-center gap-0.5 pt-2.5 pb-1 transition-all duration-150 press',
-          isActive ? 'text-nimiq-yellow' : 'text-gray-400'
-        )}>
-          <div className={cn(
-            'w-8 h-8 rounded-full flex items-center justify-center transition-all',
-            isActive ? 'bg-nimiq-yellow/12' : ''
-          )}>
-            <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+        <div className={cn('flex flex-col items-center gap-0.5 py-2.5 transition-all duration-150 press', isActive ? 'text-nimiq-yellow' : 'text-gray-400')}>
+          <div className={cn('w-8 h-8 rounded-full flex items-center justify-center transition-all', isActive ? 'bg-nimiq-yellow/12' : '')}>
+            <Icon size={21} strokeWidth={isActive ? 2.5 : 1.8} />
           </div>
-          <span className={cn(
-            'text-[10px] font-bold tracking-wide uppercase transition-all',
-            isActive ? 'opacity-100' : 'opacity-40'
-          )}>
+          <span className={cn('text-[10px] font-bold tracking-wide uppercase transition-all', isActive ? 'opacity-100' : 'opacity-50')}>
             {label}
           </span>
         </div>
