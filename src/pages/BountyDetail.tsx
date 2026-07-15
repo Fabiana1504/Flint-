@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, AlertCircle, CheckCircle2, Loader2, ExternalLink } from 'lucide-react'
 import { CategoryPill } from '@/components/bounty/CategoryPill'
@@ -19,7 +19,7 @@ export function BountyDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { wallet, connect, connecting } = useWallet()
-  const { bounty, loading, setBounty } = useBounty(id!)
+  const { bounty, loading, setBounty } = useBounty(id)
   const [claiming, setClaiming]   = useState(false)
   const [approving, setApproving] = useState(false)
   const [payError, setPayError]   = useState<string | null>(null)
@@ -231,7 +231,7 @@ export function BountyDetail() {
   )
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}>
       <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-3">{title}</p>

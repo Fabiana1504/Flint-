@@ -29,7 +29,7 @@ export function SubmitWork() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { wallet } = useWallet()
-  const { bounty, setBounty } = useBounty(id!)
+  const { bounty, setBounty } = useBounty(id)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 

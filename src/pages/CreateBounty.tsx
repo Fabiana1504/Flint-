@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Flame, Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useWallet } from '@/context/WalletContext'
 import { createBounty } from '@/lib/supabase'
 import { CATEGORIES, cn } from '@/lib/utils'
-import type { BountyCategory, RewardCurrency } from '@/types'
+import type { BountyCategory } from '@/types'
 
 const schema = z.object({
   title:            z.string().min(5, 'At least 5 characters').max(100),
@@ -31,7 +31,6 @@ export function CreateBounty() {
   const navigate = useNavigate()
   const { wallet, connect, connecting } = useWallet()
   const [category, setCategory]   = useState<BountyCategory>('Dev')
-  const [currency, setCurrency]   = useState<RewardCurrency>('NIM')
   const [submitting, setSubmitting] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({ resolver: zodResolver(schema) })
@@ -40,7 +39,7 @@ export function CreateBounty() {
     if (!wallet) { await connect(); return }
     setSubmitting(true)
     try {
-      const bounty = await createBounty({ title: data.title, description: data.description, category, rewardAmount: data.rewardAmount, rewardCurrency: currency, creatorWallet: wallet.address, evidenceRequired: data.evidenceRequired, status: 'open' })
+      const bounty = await createBounty({ title: data.title, description: data.description, category, rewardAmount: data.rewardAmount, rewardCurrency: 'NIM', creatorWallet: wallet.address, evidenceRequired: data.evidenceRequired, status: 'open' })
       navigate(`/bounty/${bounty.id}`)
     } finally { setSubmitting(false) }
   }
@@ -81,44 +80,22 @@ export function CreateBounty() {
 
         {/* Reward */}
         <div className="flex flex-col gap-2.5">
-          <label className="text-sm font-bold text-text-primary">Reward</label>
-          <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-card">
-            {/* Amount input */}
-            <div className="px-5 pt-5 pb-3">
-              <div className="flex items-baseline gap-2">
-                <input
-                  {...register('rewardAmount')}
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  step="any"
-                  placeholder="0"
-                  className="flex-1 text-4xl font-display font-extrabold text-text-primary bg-transparent outline-none placeholder:text-gray-200 w-0"
-                  style={{ letterSpacing: '-0.03em' }}
-                />
-                <span className="text-lg font-bold text-text-muted">{currency}</span>
-              </div>
-              {errors.rewardAmount && <p className="text-xs text-error font-medium mt-1">{errors.rewardAmount.message}</p>}
+          <label className="text-sm font-bold text-text-primary">Reward (NIM)</label>
+          <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-card px-5 py-5">
+            <div className="flex items-baseline gap-2">
+              <input
+                {...register('rewardAmount')}
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="any"
+                placeholder="0"
+                className="flex-1 text-4xl font-display font-extrabold text-text-primary bg-transparent outline-none placeholder:text-gray-200 w-0"
+                style={{ letterSpacing: '-0.03em' }}
+              />
+              <span className="text-lg font-bold text-nimiq-yellow">NIM</span>
             </div>
-            {/* Currency toggle */}
-            <div className="flex border-t border-gray-100">
-              {(['NIM', 'USDT'] as RewardCurrency[]).map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCurrency(c)}
-                  className={cn(
-                    'flex-1 py-3 text-sm font-bold transition-all press',
-                    currency === c
-                      ? 'text-[#18181B]'
-                      : 'text-text-muted'
-                  )}
-                  style={currency === c ? { background: 'linear-gradient(135deg,#F7C04A,#F5A623)' } : { background: 'transparent' }}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+            {errors.rewardAmount && <p className="text-xs text-error font-medium mt-1">{errors.rewardAmount.message}</p>}
           </div>
         </div>
 
@@ -156,7 +133,7 @@ function CatButton({ cat, active, onSelect }: { cat: BountyCategory; active: boo
   )
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-bold text-text-primary">{label}</label>
@@ -166,7 +143,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
   )
 }
 
-function ActionBtn({ label, onClick, disabled, loading, icon }: { label: string; onClick: () => void; disabled?: boolean; loading?: boolean; icon?: React.ReactNode }) {
+function ActionBtn({ label, onClick, disabled, loading, icon }: { label: string; onClick: () => void; disabled?: boolean; loading?: boolean; icon?: ReactNode }) {
   return (
     <button
       onClick={onClick}

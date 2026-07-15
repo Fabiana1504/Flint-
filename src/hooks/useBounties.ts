@@ -25,12 +25,13 @@ export function useBounties(filters?: BountyFilters) {
   return { bounties, loading, error, refetch: load }
 }
 
-export function useBounty(id: string) {
+export function useBounty(id: string | undefined) {
   const [bounty, setBounty] = useState<Bounty | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!id) { setLoading(false); return }
     setLoading(true)
     fetchBountyById(id)
       .then(setBounty)
