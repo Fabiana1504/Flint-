@@ -6,9 +6,9 @@ import { SkeletonList } from '@/components/common/SkeletonCard'
 import { EmptyState } from '@/components/common/EmptyState'
 import { useWallet } from '@/context/WalletContext'
 import { useLang } from '@/context/LangContext'
-import { fetchMyBounties, fetchPaymentHistory } from '@/lib/supabase'
+import { fetchMyBounties, fetchPaymentHistory, getOrCreateUser } from '@/lib/supabase'
 import { formatReward, shortenAddress, timeAgo, cn } from '@/lib/utils'
-import type { Bounty, Payment } from '@/types'
+import type { Bounty, Payment, User } from '@/types'
 
 type Tab = 'created' | 'claimed' | 'payments'
 
@@ -21,12 +21,22 @@ export function Dashboard() {
   const [claimed, setClaimed] = useState<Bounty[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(false)
+  const [freshUser, setFreshUser] = useState<User | null>(null)
 
   useEffect(() => {
     if (!wallet) return
     setLoading(true)
-    Promise.all([fetchMyBounties(wallet.address), fetchPaymentHistory(wallet.address)])
-      .then(([{ created: c, claimed: cl }, p]) => { setCreated(c); setClaimed(cl); setPayments(p) })
+    Promise.all([
+      fetchMyBounties(wallet.address),
+      fetchPaymentHistory(wallet.address),
+      getOrCreateUser(wallet.address),
+    ])
+      .then(([{ created: c, claimed: cl }, p, u]) => {
+        setCreated(c)
+        setClaimed(cl)
+        setPayments(p)
+        setFreshUser(u)
+      })
       .finally(() => setLoading(false))
   }, [wallet])
 
@@ -78,9 +88,9 @@ export function Dashboard() {
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <StatCard icon={<TrendingUp size={14} strokeWidth={2} />} label={t.dashboard.created}   value={user?.createdBounties ?? 0} />
-          <StatCard icon={<CheckSquare size={14} strokeWidth={2} />} label={t.dashboard.completed} value={user?.completedBounties ?? 0} />
-          <StatCard icon={<Star size={14} strokeWidth={2} />}        label={t.dashboard.repScore}  value={user?.reputationScore ?? 0} />
+          <StatCard icon={<TrendingUp size={14} strokeWidth={2} />} label={t.dashboard.created}   value={created.length} />
+          <StatCard icon={<CheckSquare size={14} strokeWidth={2} />} label={t.dashboard.completed} value={claimed.filter(b => b.status === 'paid').length} />
+          <StatCard icon={<Star size={14} strokeWidth={2} />}        label={t.dashboard.repScore}  value={freshUser?.reputationScore ?? user?.reputationScore ?? 0} />
         </div>
       </div>
 
