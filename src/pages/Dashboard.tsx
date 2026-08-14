@@ -105,7 +105,7 @@ export function Dashboard() {
             <span>{label}</span>
             {count > 0 && (
               <span className={cn('ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full',
-                tab === key ? 'bg-nimiq-yellow text-nimiq-dark' : 'bg-gray-100 text-gray-400')}>
+                tab === key ? 'bg-nimiq-yellow text-nimiq-dark' : 'bg-border text-text-muted')}>
                 {count}
               </span>
             )}

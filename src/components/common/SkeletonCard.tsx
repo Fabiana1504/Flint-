@@ -1,6 +1,6 @@
 export function SkeletonCard() {
   return (
-    <div className="bg-white rounded-3xl overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+    <div className="bg-surface rounded-3xl overflow-hidden" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
       {/* top bar */}
       <div className="h-1 w-full shimmer" />
       <div className="p-4 space-y-3">

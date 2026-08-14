@@ -92,7 +92,7 @@ export function CreateBounty() {
                 min="0"
                 step="any"
                 placeholder="0"
-                className="flex-1 text-4xl font-display font-extrabold text-text-primary bg-transparent outline-none placeholder:text-gray-200 w-0"
+                className="flex-1 text-4xl font-display font-extrabold text-text-primary bg-transparent outline-none placeholder:text-text-muted w-0"
                 style={{ letterSpacing: '-0.03em' }}
               />
               <span className="text-lg font-bold text-nimiq-yellow">NIM</span>

@@ -8,8 +8,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: 'bg-nimiq-yellow text-text-primary active:brightness-90',
-        secondary: 'bg-white border border-border text-text-primary hover:bg-gray-50',
-        ghost: 'text-text-secondary hover:text-text-primary hover:bg-gray-100',
+        secondary: 'bg-surface border border-border text-text-primary hover:bg-background',
+        ghost: 'text-text-secondary hover:text-text-primary hover:bg-border/40',
         destructive: 'bg-error text-white hover:brightness-105',
       },
       size: {
