@@ -100,7 +100,7 @@ export function Dashboard() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={cn('flex-1 py-3.5 text-sm font-bold transition-colors relative press', tab === key ? 'text-text-primary' : 'text-gray-400')}
+            className={cn('flex-1 py-3.5 text-sm font-bold transition-colors relative press', tab === key ? 'text-text-primary' : 'text-text-muted')}
           >
             <span>{label}</span>
             {count > 0 && (

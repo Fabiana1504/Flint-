@@ -8,11 +8,11 @@ interface CategoryPillProps {
 }
 
 const STYLE: Record<BountyCategory, { bg: string; text: string; emoji: string }> = {
-  Testing: { bg: 'bg-purple-100', text: 'text-purple-700', emoji: '🧪' },
-  Design:  { bg: 'bg-pink-100',   text: 'text-pink-700',   emoji: '🎨' },
-  Writing: { bg: 'bg-blue-100',   text: 'text-blue-700',   emoji: '✍️' },
-  Survey:  { bg: 'bg-teal-100',   text: 'text-teal-700',   emoji: '📋' },
-  Dev:     { bg: 'bg-orange-100', text: 'text-orange-700', emoji: '💻' },
+  Testing: { bg: 'bg-purple-100 dark:bg-purple-950/60', text: 'text-purple-700 dark:text-purple-300', emoji: '🧪' },
+  Design:  { bg: 'bg-pink-100 dark:bg-pink-950/60',     text: 'text-pink-700 dark:text-pink-300',     emoji: '🎨' },
+  Writing: { bg: 'bg-blue-100 dark:bg-blue-950/60',     text: 'text-blue-700 dark:text-blue-300',     emoji: '✍️' },
+  Survey:  { bg: 'bg-teal-100 dark:bg-teal-950/60',     text: 'text-teal-700 dark:text-teal-300',     emoji: '📋' },
+  Dev:     { bg: 'bg-orange-100 dark:bg-orange-950/60', text: 'text-orange-700 dark:text-orange-300', emoji: '💻' },
 }
 
 export function CategoryPill({ category, className, size = 'sm' }: CategoryPillProps) {

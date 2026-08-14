@@ -134,8 +134,7 @@ export function Home() {
         <div className="flex flex-col gap-2.5">
           {STEPS.map(({ emoji, title, desc }, i) => (
             <div key={title} className="bg-surface rounded-3xl p-4 flex items-center gap-4 shadow-card">
-              <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl"
-                style={{ background: 'linear-gradient(145deg,#FEF3DC,#FDE9B8)' }}>
+              <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl bg-amber-50 dark:bg-amber-900/20">
                 {emoji}
                 <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-nimiq-yellow flex items-center justify-center text-[10px] font-extrabold text-[#18181B]">
                   {i + 1}
