@@ -51,10 +51,13 @@ export async function sendPayment(req: PaymentRequest): Promise<{ txHash: string
   const nimiq = await getProvider()
   const lunas = Math.round(req.amount * 1e5)
 
+  const blockNumber = await nimiq.getBlockNumber()
+
   const result = await nimiq.sendBasicTransactionWithData({
     recipient: req.recipient,
     value: lunas,
     data: `Flint bounty ${req.bountyId}`,
+    validityStartHeight: blockNumber,
   })
 
   if (isError(result)) {
