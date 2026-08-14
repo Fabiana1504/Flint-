@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { useBounty } from '@/hooks/useBounties'
 import { useWallet } from '@/context/WalletContext'
 import { useLang } from '@/context/LangContext'
+import { RotateCcw } from 'lucide-react'
 import { submitEvidence } from '@/lib/supabase'
 import { formatReward } from '@/lib/utils'
 import type { BountyCategory } from '@/types'
@@ -121,6 +122,19 @@ export function SubmitWork() {
               <p className="font-display font-extrabold text-2xl" style={{ color: accent, letterSpacing: '-0.02em' }}>
                 {formatReward(bounty.rewardAmount, bounty.rewardCurrency)}
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Revision feedback from creator */}
+        {bounty?.revisionNote && (
+          <div className="rounded-2xl p-4 border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 flex items-start gap-3">
+            <RotateCcw size={15} className="text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest mb-1.5">
+                {t.revision.bannerTitle}
+              </p>
+              <p className="text-amber-900 dark:text-amber-300 text-sm leading-relaxed italic">"{bounty.revisionNote}"</p>
             </div>
           </div>
         )}

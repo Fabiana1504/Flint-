@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Wallet, TrendingUp, CheckSquare, Star } from 'lucide-react'
+import { Wallet, TrendingUp, CheckSquare, Star, Copy, Check } from 'lucide-react'
 import { BountyCard } from '@/components/bounty/BountyCard'
 import { SkeletonList } from '@/components/common/SkeletonCard'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -137,18 +137,46 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 
 function PaymentRow({ payment, myAddress, lang, sent, received }: { payment: Payment; myAddress: string; lang: 'en' | 'es'; sent: string; received: string }) {
   const isSent = payment.fromWallet === myAddress
+  const [copied, setCopied] = useState(false)
+  const visibleHash = payment.txHash && !payment.txHash.startsWith('recovery-')
+
+  function copyHash() {
+    if (!payment.txHash) return
+    navigator.clipboard.writeText(payment.txHash).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+
   return (
-    <div className="bg-surface rounded-3xl p-4 flex items-center gap-3" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
-      <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0', isSent ? 'bg-red-50 dark:bg-red-950/40 text-red-500' : 'bg-green-50 dark:bg-green-950/40 text-green-600')}>
-        {isSent ? '↑' : '↓'}
+    <div className="bg-surface rounded-3xl p-4 flex flex-col gap-2" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+      <div className="flex items-center gap-3">
+        <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0', isSent ? 'bg-red-50 dark:bg-red-950/40 text-red-500' : 'bg-green-50 dark:bg-green-950/40 text-green-600')}>
+          {isSent ? '↑' : '↓'}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-text-primary text-sm">{isSent ? sent : received}</p>
+          <p className="text-xs text-text-muted">{timeAgo(payment.createdAt, lang)}</p>
+        </div>
+        <span className={cn('font-display font-extrabold text-base shrink-0', isSent ? 'text-error' : 'text-success')}>
+          {isSent ? '−' : '+'}{formatReward(payment.amount, payment.currency)}
+        </span>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-text-primary text-sm">{isSent ? sent : received}</p>
-        <p className="text-xs text-text-muted">{timeAgo(payment.createdAt, lang)}</p>
-      </div>
-      <span className={cn('font-display font-extrabold text-base', isSent ? 'text-error' : 'text-success')}>
-        {isSent ? '−' : '+'}{formatReward(payment.amount, payment.currency)}
-      </span>
+
+      {/* TxHash */}
+      {visibleHash && (
+        <div className="flex items-center gap-2 pl-14">
+          <span className="text-[10px] font-mono text-text-muted truncate flex-1">
+            {payment.txHash!.slice(0, 12)}…{payment.txHash!.slice(-8)}
+          </span>
+          <button
+            onClick={copyHash}
+            className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary bg-background border border-border transition-colors press"
+          >
+            {copied ? <Check size={11} className="text-green-500" /> : <Copy size={11} />}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

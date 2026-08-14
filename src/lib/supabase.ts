@@ -15,7 +15,7 @@ export interface Database {
       }
       bounties: {
         Row: Bounty & Record<string, unknown>
-        Insert: (Omit<Bounty, 'id' | 'workerWallet' | 'submittedEvidence' | 'submittedLink' | 'claimedAt' | 'submittedAt' | 'approvedAt' | 'paidAt'> & {
+        Insert: (Omit<Bounty, 'id' | 'workerWallet' | 'submittedEvidence' | 'submittedLink' | 'claimedAt' | 'submittedAt' | 'approvedAt' | 'paidAt' | 'revisionNote' | 'workerRating' | 'ratingComment'> & {
           workerWallet?: string | null
           submittedEvidence?: string | null
           submittedLink?: string | null
@@ -23,6 +23,9 @@ export interface Database {
           submittedAt?: string | null
           approvedAt?: string | null
           paidAt?: string | null
+          revisionNote?: string | null
+          workerRating?: number | null
+          ratingComment?: string | null
         }) & Record<string, unknown>
         Update: Partial<Omit<Bounty, 'id'>> & Record<string, unknown>
         Relationships: []
@@ -99,7 +102,7 @@ export async function fetchBountyById(id: string): Promise<Bounty> {
   return data
 }
 
-export async function createBounty(bounty: Omit<Bounty, 'id' | 'createdAt' | 'updatedAt' | 'workerWallet' | 'submittedEvidence' | 'submittedLink' | 'claimedAt' | 'submittedAt' | 'approvedAt' | 'paidAt'>): Promise<Bounty> {
+export async function createBounty(bounty: Omit<Bounty, 'id' | 'createdAt' | 'updatedAt' | 'workerWallet' | 'submittedEvidence' | 'submittedLink' | 'claimedAt' | 'submittedAt' | 'approvedAt' | 'paidAt' | 'revisionNote' | 'workerRating' | 'ratingComment'>): Promise<Bounty> {
   const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('bounties')
@@ -180,6 +183,54 @@ export async function markBountyPaid(bountyId: string, txHash: string): Promise<
     createdAt: new Date().toISOString(),
   })
 
+  return data
+}
+
+export async function requestRevision(bountyId: string, note: string): Promise<Bounty> {
+  const { data, error } = await supabase
+    .from('bounties')
+    .update({
+      status: 'claimed',
+      revisionNote: note,
+      submittedEvidence: null,
+      submittedLink: null,
+      submittedAt: null,
+      updatedAt: new Date().toISOString(),
+    })
+    .eq('id', bountyId)
+    .eq('status', 'submitted')
+    .select()
+    .single()
+  if (error) throw error
+  if (!data) throw new Error('Bounty not found or cannot request revision')
+  return data
+}
+
+export async function rateWorker(bountyId: string, workerWallet: string, rating: number, comment: string): Promise<Bounty> {
+  const { data, error } = await supabase
+    .from('bounties')
+    .update({ workerRating: rating, ratingComment: comment || null, updatedAt: new Date().toISOString() })
+    .eq('id', bountyId)
+    .eq('status', 'paid')
+    .is('workerRating', null)
+    .select()
+    .single()
+  if (error) throw error
+  if (!data) throw new Error('Could not save rating')
+
+  const { data: worker } = await supabase
+    .from('users')
+    .select('reputationScore, completedBounties')
+    .eq('walletAddress', workerWallet)
+    .single()
+  if (worker) {
+    const count = Math.max(1, worker.completedBounties)
+    const newScore = Math.round((worker.reputationScore * (count - 1) + rating * 20) / count)
+    await supabase
+      .from('users')
+      .update({ reputationScore: Math.min(100, newScore) })
+      .eq('walletAddress', workerWallet)
+  }
   return data
 }
 

@@ -45,6 +45,9 @@ export interface Bounty {
   submittedAt: string | null
   approvedAt: string | null
   paidAt: string | null
+  revisionNote: string | null
+  workerRating: number | null
+  ratingComment: string | null
 }
 
 export interface Payment {
