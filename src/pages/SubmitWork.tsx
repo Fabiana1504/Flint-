@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { useBounty } from '@/hooks/useBounties'
 import { useWallet } from '@/context/WalletContext'
+import { useLang } from '@/context/LangContext'
 import { submitEvidence } from '@/lib/supabase'
 import { formatReward } from '@/lib/utils'
 import type { BountyCategory } from '@/types'
@@ -29,6 +30,7 @@ export function SubmitWork() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { wallet } = useWallet()
+  const { t } = useLang()
   const { bounty, setBounty } = useBounty(id)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -55,22 +57,22 @@ export function SubmitWork() {
           <Clock size={36} strokeWidth={1.8} className="text-emerald-600" />
         </div>
         <h1 className="font-display font-extrabold text-text-primary text-2xl mb-2" style={{ letterSpacing: '-0.02em' }}>
-          Work submitted!
+          {t.submit.workSubmitted}
         </h1>
         <p className="text-text-secondary text-sm max-w-[240px] leading-relaxed mb-8">
-          The bounty creator will review your work and release payment when approved.
+          {t.submit.workSubmittedDesc}
         </p>
         {bounty && (
-          <div className="w-full max-w-xs bg-white rounded-3xl p-5 text-left mb-6 shadow-card-md">
-            <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5">Pending reward</p>
+          <div className="w-full max-w-xs bg-surface rounded-3xl p-5 text-left mb-6 shadow-card-md">
+            <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1.5">{t.submit.pendingReward}</p>
             <p className="font-display font-extrabold text-3xl" style={{ color: accent, letterSpacing: '-0.03em' }}>
               {formatReward(bounty.rewardAmount, bounty.rewardCurrency)}
             </p>
           </div>
         )}
         <button onClick={() => navigate('/dashboard')}
-          className="h-12 px-8 rounded-2xl font-bold text-sm text-text-secondary border border-gray-200 bg-white press shadow-card">
-          View my bounties
+          className="h-12 px-8 rounded-2xl font-bold text-sm text-text-secondary border border-border bg-surface press shadow-card">
+          {t.submit.viewMyBounties}
         </button>
       </div>
     )
@@ -85,13 +87,13 @@ export function SubmitWork() {
           <CheckCircle2 size={36} strokeWidth={1.8} className="text-emerald-600" />
         </div>
         <h1 className="font-display font-extrabold text-text-primary text-2xl mb-2" style={{ letterSpacing: '-0.02em' }}>
-          Payment approved!
+          {t.submit.paymentApproved}
         </h1>
-        <p className="text-text-secondary text-sm mb-8">The creator approved your work. The NIM is on its way.</p>
+        <p className="text-text-secondary text-sm mb-8">{t.submit.paymentApprovedDesc}</p>
         <button onClick={() => navigate('/dashboard')}
           className="h-14 px-8 rounded-2xl font-display font-bold text-[#18181B] text-base press"
           style={{ background: 'linear-gradient(145deg,#F7C04A,#F5A623)', boxShadow: '0 6px 24px rgba(245,166,35,0.48)' }}>
-          View dashboard
+          {t.submit.viewDashboard}
         </button>
       </div>
     )
@@ -100,21 +102,21 @@ export function SubmitWork() {
   /* ── Form ── */
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-white/95 border-b border-gray-200/70 px-4 h-14 flex items-center gap-2">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 press">
+      <div className="sticky top-0 z-10 bg-surface/95 border-b border-border px-4 h-14 flex items-center gap-2">
+        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-background press">
           <ArrowLeft size={18} className="text-text-primary" />
         </button>
-        <span className="font-display font-bold text-text-primary">Submit work</span>
+        <span className="font-display font-bold text-text-primary">{t.submit.title}</span>
       </div>
 
       <div className="px-4 pt-5 pb-8 flex flex-col gap-5">
 
         {/* Bounty info card */}
         {bounty && (
-          <div className="bg-white rounded-3xl overflow-hidden shadow-card">
+          <div className="bg-surface rounded-3xl overflow-hidden shadow-card">
             <div className="h-[3px]" style={{ background: `linear-gradient(90deg,${accent},${accent}88)` }} />
             <div className="p-4">
-              <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1">Bounty</p>
+              <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-1">{t.submit.bounty}</p>
               <p className="font-display font-bold text-text-primary text-base mb-2">{bounty.title}</p>
               <p className="font-display font-extrabold text-2xl" style={{ color: accent, letterSpacing: '-0.02em' }}>
                 {formatReward(bounty.rewardAmount, bounty.rewardCurrency)}
@@ -127,7 +129,7 @@ export function SubmitWork() {
         {bounty?.evidenceRequired && (
           <div className="rounded-2xl p-4 border-2" style={{ borderColor: `${accent}35`, background: `${accent}0A` }}>
             <p className="text-[11px] font-bold uppercase tracking-widest mb-2" style={{ color: accent }}>
-              Required evidence
+              {t.submit.requiredEvidence}
             </p>
             <p className="text-text-primary text-sm leading-relaxed">{bounty.evidenceRequired}</p>
           </div>
@@ -136,14 +138,14 @@ export function SubmitWork() {
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold text-text-primary">Describe your work</label>
-            <Textarea {...register('evidence')} placeholder="Explain what you did and how you completed the task…" rows={5} />
+            <label className="text-sm font-bold text-text-primary">{t.submit.describeWork}</label>
+            <Textarea {...register('evidence')} placeholder={t.submit.descWorkPlaceholder} rows={5} />
             {errors.evidence && <p className="text-xs text-error font-semibold">{errors.evidence.message}</p>}
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-bold text-text-primary">
-              Link <span className="font-normal text-text-muted">(optional)</span>
+              {t.submit.link} <span className="font-normal text-text-muted">{t.submit.optional}</span>
             </label>
             <Input {...register('link')} type="url" placeholder="https://…" />
             {errors.link && <p className="text-xs text-error font-semibold">{errors.link.message}</p>}
@@ -157,7 +159,7 @@ export function SubmitWork() {
           className="w-full h-14 rounded-2xl font-display font-bold text-[#18181B] text-base disabled:opacity-60 flex items-center justify-center gap-2.5 mt-1 press"
           style={{ background: 'linear-gradient(145deg,#F7C04A 0%,#F5A623 60%,#E8951A 100%)', boxShadow: '0 6px 24px rgba(245,166,35,0.48)' }}
         >
-          {submitting ? <Loader2 size={20} className="animate-spin" /> : <><Send size={18} strokeWidth={2.5} />Submit work</>}
+          {submitting ? <Loader2 size={20} className="animate-spin" /> : <><Send size={18} strokeWidth={2.5} />{t.submit.submitWork}</>}
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/bounty/StatusBadge'
 import { SkeletonCard } from '@/components/common/SkeletonCard'
 import { useBounty } from '@/hooks/useBounties'
 import { useWallet } from '@/context/WalletContext'
+import { useLang } from '@/context/LangContext'
 import { claimBounty, approveBounty, markBountyPaid } from '@/lib/supabase'
 import { sendPayment } from '@/lib/nimiq'
 import { formatReward, timeAgo, shortenAddress } from '@/lib/utils'
@@ -19,6 +20,7 @@ export function BountyDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { wallet, connect, connecting } = useWallet()
+  const { t, lang } = useLang()
   const { bounty, loading, setBounty } = useBounty(id)
   const [claiming, setClaiming]   = useState(false)
   const [approving, setApproving] = useState(false)
@@ -79,14 +81,14 @@ export function BountyDetail() {
 
   if (!bounty) return (
     <div className="flex flex-col items-center justify-center min-h-screen px-5 text-center bg-background">
-      <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center mb-4" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
-        <AlertCircle size={28} className="text-gray-400" />
+      <div className="w-16 h-16 rounded-3xl bg-surface border border-border flex items-center justify-center mb-4" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
+        <AlertCircle size={28} className="text-text-muted" />
       </div>
-      <h2 className="font-display font-bold text-text-primary text-xl mb-1">Bounty not found</h2>
-      <p className="text-text-secondary text-sm mb-6">The link may be wrong or the bounty was removed.</p>
+      <h2 className="font-display font-bold text-text-primary text-xl mb-1">{t.detail.notFound}</h2>
+      <p className="text-text-secondary text-sm mb-6">{t.detail.notFoundDesc}</p>
       <button onClick={() => navigate('/browse')} className="h-12 px-6 rounded-2xl font-bold text-nimiq-dark text-sm press"
         style={{ background: 'linear-gradient(135deg,#F5A623,#F7C04A)', boxShadow: '0 4px 16px rgba(245,166,35,0.4)' }}>
-        Browse bounties
+        {t.detail.browseBounties}
       </button>
     </div>
   )
@@ -104,17 +106,17 @@ export function BountyDetail() {
     <div className="flex flex-col min-h-screen bg-background">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/95 border-b border-gray-100 px-4 h-14 flex items-center gap-2">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors press">
+      <div className="sticky top-0 z-10 bg-surface/95 border-b border-border px-4 h-14 flex items-center gap-2">
+        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-background transition-colors press">
           <ArrowLeft size={20} className="text-text-primary" />
         </button>
-        <span className="font-display font-bold text-text-primary text-[0.95rem]">Bounty</span>
+        <span className="font-display font-bold text-text-primary text-[0.95rem]">{t.detail.title}</span>
       </div>
 
       <div className="px-4 pt-4 pb-6 flex flex-col gap-4">
 
         {/* Hero card */}
-        <div className="bg-white rounded-3xl overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+        <div className="bg-surface rounded-3xl overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
           <div className="h-1.5" style={{ background: accent }} />
           <div className="p-5">
             <div className="flex flex-wrap gap-2 mb-3">
@@ -126,7 +128,7 @@ export function BountyDetail() {
             </h1>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-[11px] text-text-muted font-semibold uppercase tracking-widest mb-1">Reward</p>
+                <p className="text-[11px] text-text-muted font-semibold uppercase tracking-widest mb-1">{t.detail.reward}</p>
                 <span className="font-display font-extrabold text-3xl" style={{ color: accent }}>
                   {formatReward(bounty.rewardAmount, bounty.rewardCurrency)}
                 </span>
@@ -145,41 +147,41 @@ export function BountyDetail() {
               <CheckCircle2 size={20} className="text-green-600" />
             </div>
             <div>
-              <p className="font-bold text-green-800 text-sm">Payment sent!</p>
-              <p className="text-green-700 text-xs mt-0.5">{formatReward(bounty.rewardAmount, bounty.rewardCurrency)} sent to the worker.</p>
+              <p className="font-bold text-green-800 text-sm">{t.detail.paymentSent}</p>
+              <p className="text-green-700 text-xs mt-0.5">{formatReward(bounty.rewardAmount, bounty.rewardCurrency)} {t.detail.paymentSentTo}</p>
             </div>
           </div>
         )}
 
         {/* Description */}
-        <Card title="Description">
+        <Card title={t.detail.description}>
           <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-wrap">{bounty.description}</p>
         </Card>
 
         {/* Evidence required */}
-        <div className="rounded-2xl p-4 border-2 bg-nimiq-yellow-light" style={{ borderColor: 'rgba(245,166,35,0.3)' }}>
-          <p className="text-[11px] font-bold text-nimiq-yellow uppercase tracking-widest mb-2">Evidence required</p>
+        <div className="rounded-2xl p-4 border-2 bg-nimiq-yellow-light dark:bg-nimiq-yellow/10" style={{ borderColor: 'rgba(245,166,35,0.3)' }}>
+          <p className="text-[11px] font-bold text-nimiq-yellow uppercase tracking-widest mb-2">{t.detail.evidenceRequired}</p>
           <p className="text-text-primary text-sm leading-relaxed">{bounty.evidenceRequired}</p>
         </div>
 
         {/* Details */}
-        <Card title="Details">
+        <Card title={t.detail.details}>
           <div className="space-y-3">
-            <MetaRow label="Posted by"  value={shortenAddress(bounty.creatorWallet)} />
-            {bounty.workerWallet && <MetaRow label="Claimed by" value={shortenAddress(bounty.workerWallet)} />}
-            <MetaRow label="Posted"     value={timeAgo(bounty.createdAt)} />
+            <MetaRow label={t.detail.postedBy}  value={shortenAddress(bounty.creatorWallet)} />
+            {bounty.workerWallet && <MetaRow label={t.detail.claimedBy} value={shortenAddress(bounty.workerWallet)} />}
+            <MetaRow label={t.detail.posted}    value={timeAgo(bounty.createdAt, lang)} />
           </div>
         </Card>
 
         {/* Submitted work */}
         {bounty.submittedEvidence && (
-          <Card title="Submitted work">
+          <Card title={t.detail.submittedWork}>
             <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-wrap mb-3">{bounty.submittedEvidence}</p>
             {bounty.submittedLink && (
               <a href={bounty.submittedLink} target="_blank" rel="noreferrer noopener"
                 className="inline-flex items-center gap-1.5 font-bold text-sm"
                 style={{ color: accent }}>
-                View link <ExternalLink size={13} />
+                {t.detail.viewLink} <ExternalLink size={13} />
               </a>
             )}
           </Card>
@@ -196,28 +198,28 @@ export function BountyDetail() {
         {/* CTA */}
         <div className="pt-1">
           {!wallet ? (
-            <CTA label={connecting ? 'Connecting…' : 'Connect wallet to claim'} onClick={connect} disabled={connecting} />
+            <CTA label={connecting ? t.dashboard.connecting : t.detail.connectToClaim} onClick={connect} disabled={connecting} />
           ) : canClaim ? (
-            <CTA label={claiming ? 'Claiming…' : 'Claim this bounty'} onClick={handleClaim} disabled={claiming} loading={claiming} />
+            <CTA label={claiming ? t.detail.claiming : t.detail.claim} onClick={handleClaim} disabled={claiming} loading={claiming} />
           ) : canSubmit ? (
-            <CTA label="Submit your work" onClick={() => navigate(`/bounty/${bounty.id}/submit`)} />
+            <CTA label={t.detail.submitWork} onClick={() => navigate(`/bounty/${bounty.id}/submit`)} />
           ) : canApprove ? (
             <>
               {bounty.status === 'approved' && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-3 flex items-start gap-2.5">
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-3 mb-3 flex items-start gap-2.5">
                   <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-                  <p className="text-amber-800 text-xs font-medium leading-relaxed">
-                    Payment was sent but the record wasn't saved. Tap below to complete the approval without sending NIM again.
+                  <p className="text-amber-800 dark:text-amber-300 text-xs font-medium leading-relaxed">
+                    {t.detail.recoveryWarning}
                   </p>
                 </div>
               )}
               <CTA
                 label={
                   approving
-                    ? 'Completing…'
+                    ? t.detail.completing
                     : bounty.status === 'approved'
-                      ? 'Complete approval (NIM already sent)'
-                      : `Approve & send ${formatReward(bounty.rewardAmount, bounty.rewardCurrency)}`
+                      ? t.detail.completeApproval
+                      : `${t.detail.approve} ${formatReward(bounty.rewardAmount, bounty.rewardCurrency)}`
                 }
                 onClick={handleApprove}
                 disabled={approving}
@@ -233,7 +235,7 @@ export function BountyDetail() {
 
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl p-4" style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}>
+    <div className="bg-surface rounded-2xl p-4" style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}>
       <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-3">{title}</p>
       {children}
     </div>

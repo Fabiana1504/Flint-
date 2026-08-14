@@ -2,12 +2,7 @@ import { type ElementType } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Search, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const TABS = [
-  { to: '/',          icon: Home,   label: 'Home'   },
-  { to: '/browse',    icon: Search, label: 'Browse' },
-  { to: '/dashboard', icon: User,   label: 'Mine'   },
-] as const
+import { useLang } from '@/context/LangContext'
 
 function matchRoute(pathname: string, to: string) {
   if (to === '/') return pathname === '/'
@@ -17,7 +12,14 @@ function matchRoute(pathname: string, to: string) {
 export function BottomNav() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const { t } = useLang()
   const isCreate = pathname === '/create'
+
+  const TABS = [
+    { to: '/',          icon: Home,   label: t.nav.home   },
+    { to: '/browse',    icon: Search, label: t.nav.browse },
+    { to: '/dashboard', icon: User,   label: t.nav.mine   },
+  ] as const
 
   return (
     <nav
@@ -28,7 +30,7 @@ export function BottomNav() {
         className="pointer-events-auto w-full max-w-app px-3"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
-        <div className="grid grid-cols-4 rounded-[1.625rem] border border-black/[0.06] bg-white/92 backdrop-blur-2xl p-1 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="nav-glass grid grid-cols-4 rounded-[1.625rem] border border-black/[0.06] dark:border-white/[0.06] backdrop-blur-2xl p-1 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)]">
           {TABS.slice(0, 2).map(({ to, icon, label }) => (
             <NavTab key={to} to={to} icon={icon} label={label} active={matchRoute(pathname, to)} />
           ))}
@@ -54,7 +56,7 @@ export function BottomNav() {
                   : '0 2px 10px rgba(245,166,35,0.35), inset 0 1px 0 rgba(255,255,255,0.3)',
               }}
             >
-              Post
+              {t.nav.post}
             </span>
           </button>
 
@@ -89,12 +91,12 @@ function NavTab({
         <div
           className={cn(
             'w-9 h-9 rounded-xl flex items-center justify-center transition-colors',
-            active ? 'text-nimiq-yellow' : 'text-gray-400',
+            active ? 'text-nimiq-yellow' : 'text-text-muted',
           )}
         >
           <Icon size={20} strokeWidth={active ? 2.5 : 2} />
         </div>
-        <span className={cn('text-[10px] font-semibold truncate', active ? 'text-nimiq-yellow' : 'text-gray-400')}>
+        <span className={cn('text-[10px] font-semibold truncate', active ? 'text-nimiq-yellow' : 'text-text-muted')}>
           {label}
         </span>
       </div>

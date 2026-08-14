@@ -18,11 +18,17 @@ export function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`
 }
 
-export function timeAgo(dateStr: string): string {
+export function timeAgo(dateStr: string, lang: 'en' | 'es' = 'en'): string {
   const date = new Date(dateStr)
   const now = new Date()
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
+  if (lang === 'es') {
+    if (seconds < 60) return 'ahora'
+    if (seconds < 3600) return `hace ${Math.floor(seconds / 60)}m`
+    if (seconds < 86400) return `hace ${Math.floor(seconds / 3600)}h`
+    return `hace ${Math.floor(seconds / 86400)}d`
+  }
   if (seconds < 60) return 'just now'
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`

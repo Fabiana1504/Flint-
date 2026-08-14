@@ -1,4 +1,3 @@
-
 interface EmptyStateProps {
   icon?: string
   title: string
@@ -9,7 +8,7 @@ interface EmptyStateProps {
 export function EmptyState({ icon = '🔍', title, description, action }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-14 px-6 text-center">
-      <div className="w-20 h-20 rounded-3xl bg-white border border-gray-100 flex items-center justify-center mb-5 text-4xl"
+      <div className="w-20 h-20 rounded-3xl bg-surface border border-border flex items-center justify-center mb-5 text-4xl"
         style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
         {icon}
       </div>

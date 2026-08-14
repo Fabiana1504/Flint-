@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Semantic color tokens ──────────────────────── */
+:root {
+  --color-background:     #F0EFE9;
+  --color-surface:        #FFFFFF;
+  --color-text-primary:   #18181B;
+  --color-text-secondary: #71717A;
+  --color-text-muted:     #A1A1AA;
+  --color-border:         #E4E4E7;
+}
+
+.dark {
+  --color-background:     #0E0E16;
+  --color-surface:        #1C1C28;
+  --color-text-primary:   #F4F4F5;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted:     #52525B;
+  --color-border:         #27272A;
+}
+
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
@@ -10,7 +29,7 @@
 
   html {
     font-family: 'Inter', sans-serif;
-    background-color: #F0EFE9;
+    background-color: var(--color-background);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -76,10 +95,18 @@
     background-size: 200% 100%;
     animation: shimmer 1.6s infinite;
   }
+  .dark .shimmer {
+    background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+    background-size: 200% 100%;
+  }
   @keyframes shimmer {
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
+
+  /* ── Nav glass background ───────────────── */
+  .nav-glass { background: rgba(255, 255, 255, 0.92); }
+  .dark .nav-glass { background: rgba(28, 28, 40, 0.92); }
 
   /* ── Press / tap feedback ───────────────── */
   .press { -webkit-tap-highlight-color: transparent; }

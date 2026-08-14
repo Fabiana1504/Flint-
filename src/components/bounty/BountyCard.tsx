@@ -3,6 +3,7 @@ import { ChevronRight } from 'lucide-react'
 import { CategoryPill } from './CategoryPill'
 import { StatusBadge } from './StatusBadge'
 import { formatReward, timeAgo, shortenAddress } from '@/lib/utils'
+import { useLang } from '@/context/LangContext'
 import type { Bounty, BountyCategory } from '@/types'
 
 const CAT_ACCENT: Record<BountyCategory, string> = {
@@ -15,16 +16,16 @@ const CAT_ACCENT: Record<BountyCategory, string> = {
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
   const navigate = useNavigate()
+  const { lang } = useLang()
   const accent = CAT_ACCENT[bounty.category]
 
   return (
     <div
       onClick={() => navigate(`/bounty/${bounty.id}`)}
-      className="group relative bg-white rounded-3xl overflow-hidden cursor-pointer press"
+      className="group relative rounded-3xl overflow-hidden cursor-pointer press"
       style={{
         boxShadow: '0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04)',
-        // Very subtle category tint on the card background
-        background: `linear-gradient(180deg, ${accent}0B 0%, #ffffff 40%)`,
+        background: `linear-gradient(180deg, ${accent}0B 0%, var(--color-surface) 40%)`,
       }}
     >
       {/* Category color bar */}
@@ -60,12 +61,12 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         </p>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-black/[0.05]">
+        <div className="flex items-center justify-between pt-3 border-t border-black/[0.05] dark:border-white/[0.05]">
           <span className="text-xs text-text-muted">
             by <span className="text-text-secondary font-semibold">{shortenAddress(bounty.creatorWallet)}</span>
           </span>
           <div className="flex items-center gap-0.5 text-xs text-text-muted">
-            {timeAgo(bounty.createdAt)}
+            {timeAgo(bounty.createdAt, lang)}
             <ChevronRight size={12} className="opacity-30" />
           </div>
         </div>

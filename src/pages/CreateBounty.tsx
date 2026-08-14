@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useWallet } from '@/context/WalletContext'
+import { useLang } from '@/context/LangContext'
 import { createBounty } from '@/lib/supabase'
 import { CATEGORIES, cn } from '@/lib/utils'
 import type { BountyCategory } from '@/types'
@@ -30,6 +31,7 @@ const CAT_STYLE: Record<BountyCategory, { emoji: string; active: string; glow: s
 export function CreateBounty() {
   const navigate = useNavigate()
   const { wallet, connect, connecting } = useWallet()
+  const { t } = useLang()
   const [category, setCategory]   = useState<BountyCategory>('Dev')
   const [submitting, setSubmitting] = useState(false)
 
@@ -48,40 +50,40 @@ export function CreateBounty() {
     <div className="flex flex-col min-h-screen bg-background">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 border-b border-gray-200/70 px-4 h-14 flex items-center gap-2 bg-white/95">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 press">
+      <div className="sticky top-0 z-10 border-b border-border px-4 h-14 flex items-center gap-2 bg-surface/95">
+        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-background press">
           <ArrowLeft size={18} className="text-text-primary" />
         </button>
-        <span className="font-display font-bold text-text-primary">Post a bounty</span>
+        <span className="font-display font-bold text-text-primary">{t.create.title}</span>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="px-4 pt-5 pb-8 flex flex-col gap-5">
 
         {/* Title */}
-        <Field label="What's the task?" error={errors.title?.message}>
-          <Input {...register('title')} placeholder="e.g. Test our checkout flow on mobile" className="h-13 text-base" />
+        <Field label={t.create.whatTask} error={errors.title?.message}>
+          <Input {...register('title')} placeholder={t.create.taskPlaceholder} className="h-13 text-base" />
         </Field>
 
         {/* Description */}
-        <Field label="Describe it in detail" error={errors.description?.message}>
-          <Textarea {...register('description')} placeholder="Include any context, links, or files the worker will need to complete this." rows={4} />
+        <Field label={t.create.describeIt} error={errors.description?.message}>
+          <Textarea {...register('description')} placeholder={t.create.descPlaceholder} rows={4} />
         </Field>
 
         {/* Category */}
         <div className="flex flex-col gap-2.5">
-          <label className="text-sm font-bold text-text-primary">Category</label>
+          <label className="text-sm font-bold text-text-primary">{t.create.category}</label>
           <div className="grid grid-cols-3 gap-2">
-            {(CATEGORIES.slice(0, 3)).map(cat => <CatButton key={cat} cat={cat} active={category === cat} onSelect={setCategory} />)}
+            {(CATEGORIES.slice(0, 3)).map(cat => <CatButton key={cat} cat={cat} active={category === cat} onSelect={setCategory} label={t.categories[cat]} />)}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {(CATEGORIES.slice(3)).map(cat => <CatButton key={cat} cat={cat} active={category === cat} onSelect={setCategory} />)}
+            {(CATEGORIES.slice(3)).map(cat => <CatButton key={cat} cat={cat} active={category === cat} onSelect={setCategory} label={t.categories[cat]} />)}
           </div>
         </div>
 
         {/* Reward */}
         <div className="flex flex-col gap-2.5">
-          <label className="text-sm font-bold text-text-primary">Reward (NIM)</label>
-          <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-card px-5 py-5">
+          <label className="text-sm font-bold text-text-primary">{t.create.reward}</label>
+          <div className="bg-surface rounded-3xl border border-border overflow-hidden shadow-card px-5 py-5">
             <div className="flex items-baseline gap-2">
               <input
                 {...register('rewardAmount')}
@@ -100,22 +102,22 @@ export function CreateBounty() {
         </div>
 
         {/* Evidence */}
-        <Field label="Proof of work required" error={errors.evidenceRequired?.message}>
-          <Textarea {...register('evidenceRequired')} placeholder="e.g. Screenshot of each screen + written summary of any bugs found" rows={3} />
+        <Field label={t.create.proof} error={errors.evidenceRequired?.message}>
+          <Textarea {...register('evidenceRequired')} placeholder={t.create.proofPlaceholder} rows={3} />
         </Field>
 
         {/* Submit */}
         {!wallet ? (
-          <ActionBtn label={connecting ? 'Connecting…' : 'Connect wallet to post'} onClick={connect} disabled={connecting} />
+          <ActionBtn label={connecting ? t.dashboard.connecting : t.create.connectToPost} onClick={connect} disabled={connecting} />
         ) : (
-          <ActionBtn label={submitting ? '' : 'Post bounty'} onClick={handleSubmit(onSubmit)} disabled={submitting} loading={submitting} icon={<Flame size={18} strokeWidth={2.5} />} />
+          <ActionBtn label={submitting ? '' : t.create.postBounty} onClick={handleSubmit(onSubmit)} disabled={submitting} loading={submitting} icon={<Flame size={18} strokeWidth={2.5} />} />
         )}
       </form>
     </div>
   )
 }
 
-function CatButton({ cat, active, onSelect }: { cat: BountyCategory; active: boolean; onSelect: (c: BountyCategory) => void }) {
+function CatButton({ cat, active, onSelect, label }: { cat: BountyCategory; active: boolean; onSelect: (c: BountyCategory) => void; label: string }) {
   const s = CAT_STYLE[cat]
   return (
     <button
@@ -123,12 +125,12 @@ function CatButton({ cat, active, onSelect }: { cat: BountyCategory; active: boo
       onClick={() => onSelect(cat)}
       className={cn(
         'flex flex-col items-center gap-1.5 py-3.5 rounded-2xl border-2 text-xs font-bold transition-all duration-150 press',
-        active ? `${s.active} text-white` : 'border-gray-200 bg-white text-text-secondary'
+        active ? `${s.active} text-white` : 'border-border bg-surface text-text-secondary'
       )}
       style={active ? { boxShadow: `0 4px 16px ${s.glow}` } : {}}
     >
       <span className="text-2xl leading-none">{s.emoji}</span>
-      {cat}
+      {label}
     </button>
   )
 }
@@ -142,6 +144,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
     </div>
   )
 }
+
 
 function ActionBtn({ label, onClick, disabled, loading, icon }: { label: string; onClick: () => void; disabled?: boolean; loading?: boolean; icon?: ReactNode }) {
   return (
